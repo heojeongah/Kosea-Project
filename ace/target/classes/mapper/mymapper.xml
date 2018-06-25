@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="home">
+<select id="getProductSearch" resultType="model.Product"
+	parameterType="model.Condition">
+		select * from 
+	(
+		select a.*, rownum rn from
+			( select 
+				distinct p_code,p_name,p_price,p_brand,p_image1
+				from product_info where p_brand=#{value} or p_name like '%'||#{value}||'%') a
+		)where rn between #{startRow} and #{endRow}
+</select>
+<select id="checkId" resultType="model.User"
+	parameterType="String">
+ 	select * from customer_info where c_id=#{c_id}
+</select>
+<select id="getOrderDetail" resultType="model.Order"
+	parameterType="String">
+		select distinct o.o_date, o.o_code, o.o_total, o.o_state, d.d_state, p.p_price,
+			d.d_name, d.d_addr, d.d_phone,ol.o_amount, p.p_image1, ol.p_code, p.p_name,p.p_code,
+			ol.ol_code 
+		from order_info o, delivery_info d, product_info p, order_line ol
+		where o.o_code = d.o_code and p.p_code = ol.p_code and ol.o_code = o.o_code 
+		and o.o_code=#{o_code} 
+</select>
+<select id="getOrderCount" resultType="Integer">
+	select count(*) as num from order_info
+</select>
+<select id="getOrderList" resultType="model.Order"
+parameterType="model.Condition">
+	select * from 
+	(
+		select a.*, rownum rn from
+		(select distinct o.o_date, o.o_code, o.o_total, 
+		o.o_state, d.d_state 
+		from order_info o, delivery_info d
+		where o.o_code = d.o_code and o.c_id=#{c_id} ) a
+	)where rn between #{startRow} and #{endRow}
+</select>
+<select id="getCommentCount" resultType="Integer">
+	select count(*) as num from comment_info
+</select>
+
+<select id="getCommentDetail" resultType="model.Comment"
+parameterType="model.Condition">
+	select * from 
+	(
+		select a.*, rownum rn from
+		(
+			(select distinct c.comment_id, c.ol_code, p.p_name,
+			c.title, c.c_image,c.content, c.w_grade, c.w_date, c.c_id
+			from  product_info p, comment_info c, order_line ol
+			where p.p_code=#{p_code} and
+			p.p_code=ol.p_code and c.ol_code=ol.ol_code
+			order by comment_id asc ) a
+		)
+	)where rn between #{startRow} and #{endRow}
+</select>
+<select id="getTypeSearch" parameterType="model.Condition" resultType="model.Product">
+	select * from 
+	(
+		select a.*, rownum rn from
+		(
+			(select distinct p_type,p_code,p_name,p_price,p_brand,p_image1 from product_info
+			where p_type like '%'||#{p_type}||'%'
+			order by p_code asc ) a
+		)
+	)where rn between #{startRow} and #{endRow}
+	</select>
+<select id="selectProdByCond" parameterType="model.Condition" resultType="model.Product">
+	select * from 
+	(
+		select a.*, rownum rn from
+		(
+			(select distinct p_code,p_name,p_price,p_brand,p_image1 from product_info
+			order by p_code asc ) a
+		)
+	)where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<select id="getProductDetail" resultType="model.Product"
+	parameterType="Integer">
+	select * from product_info where p_code = #{p_code}
+	</select>
+	<select id="getTypes" resultType="String">
+	select distinct p_type from product_info
+	</select>
+	<select id="getMaxPcode" resultType="Integer">
+	select max(p_code) as max_no from product_info
+	</select>
+	<select id="getProductCount" parameterType="model.Condition" resultType="Integer">
+	select count(distinct p_code) as num from product_info 
+	<if test="p_type!=null">
+	where p_type like '%'||#{p_type}||'%'
+	</if> 
+	<if test="value!=null"> 
+	where p_brand=#{value} or p_name like '%'||#{value}||'%'
+	 </if>
+	</select>
+<delete id="deleteComment" parameterType="String">
+	delete from comment_info where comment_id = #{comment_id}
+</delete>
+<update id="updateCommentInfo" 
+	parameterType="model.Comment">
+update comment_info set c_id=#{c_id},
+ title=#{title}, content=#{content}
+where comment_id = #{comment_id}
+</update>
+<select id="getMaxCommentId" resultType="Integer">
+select max(comment_id) as max_no from comment_info
+</select>
+<insert id="insertComment" parameterType="model.Comment">
+insert into comment_info values(#{comment_id},
+#{c_id},#{ol_code},#{w_date},#{w_grade},
+#{title},#{content},#{c_image})
+</insert>
+<delete id="deleteQna" parameterType="Integer">
+	delete from qna where qna_id = #{qna_id}
+</delete>
+<select id="getQnaDetail" resultType="model.Qna"
+	parameterType="Integer">
+	select * from qna where qna_id = #{qna_id}
+</select>
+<select id="getQnaCount" resultType="Integer">
+	select count(*) as num from qna
+</select>
+<select id="getQNAList" resultType="model.Qna"
+	parameterType="model.Condition">
+	select * from
+	(
+		select a.*, rownum rn from
+		(
+			(select * from qna order by group_id desc, order_no asc) a
+		)
+	)
+	where rn between #{startRow} and #{endRow}	
+</select>
+<update id="updateWritingInfo" 
+	parameterType="model.Qna">
+update qna set c_id=#{c_id},
+ title=#{title}, content=#{content}
+where qna_id = #{qna_id}
+</update>
+<select id="selectMaxGroupId" resultType="Integer">
+select max(group_id) as num from qna
+</select>
+<select id="getWritingInfoById" 
+resultType="model.Qna"	parameterType="Integer">
+select * from qna
+where qna_id=#{qna_id}
+</select>
+<select id="selectReplyPages" parameterType="String"
+	resultType="Integer">
+	select rn from
+	(
+		select a.*, rownum rn from
+		(
+			(select c_id,group_id,qna_id
+			from writing_info
+			order by group_id desc, qna_id asc) a
+		)
+	) where c_id=#{c_id}
+</select>
+<select id="getCommentGrade" resultType="model.Comment"
+	parameterType="String">
+	select sum(w_grade) sum, count(w_grade) num from comment_info c, order_line ol where ol.ol_code=c.ol_code and p_code=#{p_code}
+</select>
+<update id="updateProductGrade" parameterType="model.Product">
+	update product_info set p_grade=#{p_grade} where p_code=#{p_code}
+</update>
+<insert id="insertQna" parameterType="model.Qna">
+insert into qna values(#{qna_id},
+#{c_id},#{group_id},#{parent_id},#{order_no},#{w_date},
+#{w_state},#{title},#{content})
+</insert>
+<select id="getMaxId" resultType="Integer">
+	select max(qna_id) max_id from qna
+</select>
+
+	<insert id="putUser" parameterType="model.User">
+	insert into customer_info(c_id, c_pwd, c_name,
+	c_phone, c_addr, c_email) values(#{c_id},#{c_pwd},
+	#{c_name},#{c_phone},#{c_addr},#{c_email})
+	</insert>
+	<select id="getPassword" resultType="String"
+	parameterType="String">
+	select c_pwd from customer_info where c_id = #{c_id}
+</select>
+</mapper>

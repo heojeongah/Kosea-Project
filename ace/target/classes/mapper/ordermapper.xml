@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="order">
+<delete id="deleteOrderLine" parameterType="String">
+	delete from order_line where ol_code=#{ol_code}
+</delete>
+<delete id="deleteOrderInfo" parameterType="String">
+	delete from order_info where o_code=#{o_code}
+</delete>
+<delete id="deleteDeliveryInfo" parameterType="String">
+	delete from delivery_info where o_code=#{o_code}
+</delete>
+	<select id="getMaxOcode"  resultType="Integer">
+	select max(to_number(o_code)) as max_no from order_info
+	</select>
+	<select id="getMaxOLcode" resultType="Integer">
+	select max(to_number(ol_code)) as max_no from order_line
+	</select>
+	<select id="getMaxDNumber" resultType="Integer">
+	select max(to_number(d_number)) as max_no from delivery_info
+	</select>
+	<delete id="emptyCart" parameterType="String">
+	delete from cart where c_id=#{c_id}
+	</delete>
+	<insert id="addSalesInfo" parameterType="model.Sales">
+	insert into sales_info values(#{s_date},#{p_code},#{p_size},#{s_amount},#{s_total})
+	</insert>
+	<update id="updateSalesInfo" parameterType="model.Sales">
+	update sales_info set s_amount=#{s_amount},s_total=#{s_total}
+	where s_date=#{s_date} and p_code=#{p_code} and p_size=#{p_size}
+	</update>
+	<select id="getSalesInfo" resultType="model.Sales" parameterType="model.Sales">
+	select * from sales_info 
+	where s_date=#{s_date} and p_code=#{p_code} and p_size=#{p_size}
+	</select>
+	<select id="getOrderLineCount" parameterType="String" resultType="Integer">
+		select count(distinct ol_code) from order_info o,order_line ol
+		where ol.o_code = o.o_code and o.o_code=#{o_code} 
+	</select>
+	<insert id="addOrderInfo" parameterType="model.CheckOut">
+	insert into order_info values(#{o_code},#{c_id},#{o_total},#{o_state},#{o_pay},#{o_date})
+	</insert>
+	<insert id="addOrderLine" parameterType="model.CartItem">
+	insert into order_line values(#{ol_code},#{o_amount},#{o_code},#{p_code},#{p_size},#{ol_total})
+	</insert>
+	<insert id="addDeliveryInfo" parameterType="model.CheckOut">
+	insert into delivery_info values(#{d_number},#{o_code},'','',#{d_state},
+	#{d_name},#{d_addr},#{d_phone})
+	</insert>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="new">
+
+<insert id="insertCart" parameterType="model.CartItem">
+	insert into cart values(#{seqno},#{c_id},#{p_code},
+	#{p_size}, #{c_amount})
+</insert>
+
+<update id="updateCart" parameterType="model.CartItem">
+	update cart set c_amount=#{c_amount} 
+	where p_code=#{p_code} and p_size=#{p_size}
+	and c_id = #{c_id}
+</update>
+
+<delete id="deleteCart" parameterType="model.CartItem">
+	delete from cart where p_code=#{p_code} and
+	p_size=#{p_size} and c_id = #{c_id}
+</delete>
+
+<select id="selectCart" parameterType="String"
+	resultType="model.CartItem">
+	select distinct cart.p_code p_code, cart.p_size p_size,
+	cart.c_amount c_amount,
+	p.p_price p_price, p.p_name p_name, p.p_image1 p_image1
+	from cart cart, product_info p
+	where cart.p_code = p.p_code and cart.c_id = #{c_id}
+</select>
+
+<select id="selectMaxCart" resultType="Integer">
+	select max(seqno) max_seqno from cart
+</select>
+
+<update id="updatePwd" parameterType="model.User">
+	update customer_info set c_pwd = #{c_pwd}
+	where c_id = #{c_id}
+</update>
+
+<update id="updateUserInfo" parameterType="model.User">
+	update customer_info set c_phone=#{c_phone},
+	c_addr=#{c_addr}, c_email = #{c_email}
+	where c_id=#{c_id}
+</update>
+	
+<select id="getUserInfo" resultType="model.User"
+parameterType="String">
+	select * from customer_info 
+	where c_id = #{c_id}
+</select>	
+	
+	
+	
+</mapper>
