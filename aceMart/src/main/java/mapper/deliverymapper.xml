@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="deli">
+
+<select id="countDeliveryState2" resultType="Integer">
+	select count(*) from delivery_info
+	where d_state = '배송중'
+</select>
+
+<select id="countDeliveryState" resultType="Integer">
+	select count(*) from delivery_info
+	where d_state = '배송준비중'
+</select>
+
+<select id="getDeliveryByState" resultType="model.Delivery"
+parameterType="model.SCondition">
+		select * from
+   (
+           select a.*, rownum rn from
+         (   select distinct d.d_number, p.p_name, ol.o_amount,  
+         	d.d_state, d.d_sdate, d.d_edate, o.c_id
+   from product_info p, order_info o, delivery_info d, order_line ol
+   where p.p_code=ol.p_code and o.o_code= d.o_code and o.o_code=ol.o_code
+ 	and d.d_state = #{d_state}
+   order by d_sdate desc
+ ) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<update id="updateState" parameterType="model.Delivery">
+	update delivery_info set d_state = '배송중', d_sdate = #{d_sdate}
+	where d_number = #{d_number}
+</update>
+
+<select id="getDeliveryDetail" resultType="model.Delivery"
+parameterType="String">
+	select distinct d.d_number, d.o_code,
+	d.d_state, d.d_sdate, d.d_edate,  o.c_id,
+	d.d_name, d.d_addr, d.d_phone
+	from order_info o, delivery_info d, order_line ol
+	where o.o_code= d.o_code and o.o_code=ol.o_code
+	and d_number = #{d_number}
+
+</select>
+
+<select id="getDeliveryCount" resultType="Integer">
+	select count(*) as num 
+	from delivery_info d, order_line ol
+   where ol.o_code= d.o_code 
+   order by d_sdate desc
+</select>
+
+<select id="getDeliveryList" resultType="model.Delivery"
+parameterType="model.SCondition">
+	select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct to_number(d.d_number) d_number, p.p_name, ol.o_amount,  
+         	d.d_state, d.d_sdate, d.d_edate, o.c_id
+	   from product_info p, order_info o, delivery_info d, order_line ol
+	   where p.p_code=ol.p_code and ol.o_code= d.o_code and o.o_code=ol.o_code
+	   order by d_number desc
+	 ) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+</mapper>

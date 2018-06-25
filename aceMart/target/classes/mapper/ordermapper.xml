@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="order">
+
+<select id="getOrderLine" resultType="model.OrderLine"
+	parameterType="String">
+	select * from order_line where o_code=#{o_code}
+</select>
+
+<select id="getSalesInfo" resultType="model.Sales"
+	parameterType="model.Sales">
+	select * from sales_info where p_code=#{p_code}
+	and s_date=#{s_date} and p_size=#{p_size}
+</select>
+
+<update id="updateSales" parameterType="model.Sales">
+	update sales_info set s_amount=#{s_amount},
+	s_total=#{s_total}
+	where s_date=#{s_date} and p_code=#{p_code} and
+	p_size=#{p_size}
+</update>
+
+<insert id="insertSales" parameterType="model.Sales">
+	insert into sales_info values(
+	#{s_date},#{p_code},#{p_size},#{s_amount},#{s_total})
+</insert>
+
+<select id="countWaitngPay" resultType="Integer">
+	select count(*) from order_info
+	where 	o_state = '미결제'
+</select>
+
+<select id="countNewOrder" resultType="Integer"
+	parameterType="String">
+	select count(*) from order_info
+	where o_date=#{today}	
+</select>
+
+<select id="getOrderDetail" resultType="model.Order"
+parameterType="String">
+	select distinct *
+	from order_info
+	where o_code = #{o_code}
+</select>
+
+<update id="updatePayment" parameterType="String">
+	update order_info set o_state = '결제완료'
+	where o_code = #{o_code}
+</update>
+
+<select id="getWaitingOrderList" resultType="model.Order"
+parameterType="model.Condition">
+		select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct o.o_date, o.o_code,ol.p_code,
+          ol.ol_code, ol.p_size, p.p_name, 
+         	ol.o_amount, o.c_id, o.o_state
+   from product_info p, order_info o, order_line ol
+   where p.p_code=ol.p_code and o.o_code=ol.o_code and
+   o.o_state = '미결제'
+   order by o_date desc, o_code  desc) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getNewOrderList" resultType="model.Order"
+parameterType="model.Condition">
+		select * from
+   (
+      select a.*, rownum rn from
+         (  select distinct o.o_date, o.o_code,ol.p_code,
+          ol.ol_code, ol.p_size, p.p_name, 
+         	ol.o_amount, o.c_id, o.o_state
+   from product_info p, order_info o, order_line ol
+   where p.p_code=ol.p_code and o.o_code=ol.o_code and
+   o.o_date  = #{today}
+   order by o_date desc, o_code desc) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getOrderListByDate" resultType="model.Order"
+parameterType="model.SCondition">
+	select * from
+   (
+      select a.*, rownum rn from
+         ( select distinct o.o_date, o.o_code,ol.p_code,
+          ol.ol_code, ol.p_size, p.p_name, 
+         	ol.o_amount, o.c_id, o.o_state
+   from product_info p, order_info o, order_line ol
+   where p.p_code=ol.p_code and o.o_code=ol.o_code
+   and o.o_date  between #{startDate} and #{endDate}
+   order by o_date desc, o_code  desc) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getOrderList" resultType="model.Order"
+parameterType="model.Condition">
+	select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct o.o_date, o.o_code,ol.p_code,
+          ol.ol_code, ol.p_size, p.p_name, 
+         	ol.o_amount, o.c_id, o.o_state
+   from product_info p, order_info o, order_line ol
+   where p.p_code=ol.p_code and o.o_code=ol.o_code
+   order by o_date desc, o_code  desc) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getOrderCount" resultType="Integer">
+	select count(*) as num from order_line
+</select>
+
+</mapper>

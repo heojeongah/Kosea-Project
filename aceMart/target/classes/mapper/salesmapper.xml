@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sales">
+
+<select id="getSaelsTotalByRange" resultType="Integer"
+parameterType="model.SCondition">
+	select sum(s_total) from sales_info
+	where s_date between #{startDate} and #{endDate}
+</select>
+
+<select id="getSaelsTotalByDate" resultType="Integer"
+parameterType="String">
+	select sum(s_total) from sales_info
+	where s_date = #{s_date}
+</select>
+
+<select id="getSaelsTotal" resultType="Integer">
+	select sum(s_total) from sales_info
+</select>
+
+<select id="getSalesListByRange" resultType="model.Sales"
+parameterType="model.SCondition">
+select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct s.s_date, s.p_code, p.p_name, s.s_amount, s.s_total
+   from product_info p, sales_info s
+   where p.p_code=s.p_code and 
+   s.s_date between #{startDate} and #{endDate}
+   order by s_date desc) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getMonthlySales" resultType="Integer"
+parameterType="String">
+select sum(s_total) from sales_info
+where s_date like '%'||#{month}||'%'
+</select>
+
+
+<select id="getSalesListByDate" resultType="model.Sales"
+parameterType="model.SCondition">
+select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct s.s_date, s.p_code, p.p_name, s.s_amount, s.s_total
+   from product_info p, sales_info s
+   where p.p_code=s.p_code and s.s_date=#{s_date}) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getSalesList" resultType="model.Sales"
+parameterType="model.Condition">
+select * from
+   (
+      select a.*, rownum rn from
+         (   select s.s_date, s.p_code, p.p_name, s.s_amount, s.s_total
+   from product_info p, sales_info s
+   where p.p_code=s.p_code 
+   order by s_date desc
+   ) a
+   )where rn between #{startRow} and #{endRow}
+</select>
+
+<select id="getSalesCount" resultType="Integer">
+	select count(*) as num from sales_info
+</select>
+
+</mapper>

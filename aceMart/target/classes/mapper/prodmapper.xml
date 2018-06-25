@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="prod">
+	<update id="updateProduct" parameterType="model.Product">
+	update product_info set p_name=#{p_name},	p_price=#{p_price}, p_type=#{p_type},
+	p_brand=#{p_brand},p_image1=#{p_image1},p_image2=#{p_image2},p_image3=#{p_image3}
+	where p_code = #{p_code} 
+	</update>
+	
+	<delete id="deleteProduct" parameterType="String">
+	delete from product_info where p_code=#{code}
+	</delete>
+	<select id="selectProdByCond" parameterType="model.PCondition" resultType="model.Product">
+	select * from 
+	(
+		select a.*, rownum rn from
+			(select distinct p_code,p_name,p_price,p_grade,p_type,p_brand from product_info
+			order by p_code asc ) a
+	)where rn between #{startRow} and #{endRow}
+	</select>
+		<select id="selectProdByType" parameterType="model.PCondition" resultType="model.Product">
+	select * from 
+	(
+		select a.*, rownum rn from
+			(select distinct p_code,p_name,p_price,p_grade,p_type,p_brand from product_info
+			where p_type like  '%' || #{p_type} || '%' 
+			order by  p_code asc ) a
+	)where rn between #{startRow} and #{endRow}
+	</select>
+		<select id="selectProdByBrand" parameterType="model.PCondition" resultType="model.Product">
+	select * from 
+	(
+		select a.*, rownum rn from
+			(select distinct p_code,p_name,p_price,p_grade,p_type,p_brand from product_info
+						where p_brand like  '%' || #{p_brand} || '%' 
+			order by p_code asc ) a
+	)where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<select id="getProductDetail" resultType="model.Product"
+	parameterType="Integer">
+	select * from product_info where p_code = #{p_code}
+	</select>
+	<select id="getBrands" resultType="String">
+	select distinct p_brand from product_info
+	</select>
+
+	<select id="getTypes" resultType="String">
+	select distinct p_type from product_info
+	</select>
+
+	<insert id="insertProduct" parameterType="model.Product">
+	insert into product_info values(
+	#{p_code},#{p_size},#{p_name},#{p_price},#{p_stack},#{p_grade},
+	#{p_type},#{p_intro},#{p_brand},#{p_image1},#{p_image2},#{p_image3})
+	</insert>
+	
+	<select id="getMaxPcode" resultType="Integer">
+	select max(p_code) as max_no from product_info
+	</select>
+	<select id="getProductTypeCount" parameterType="String" resultType="Integer">
+	select count(distinct p_code) as num from product_info
+						where p_type like  '%' || #{p_type} || '%' 
+	</select>
+	<select id="getProductBrandCount" parameterType="String" resultType="Integer">
+	select count(distinct p_code) as num from product_info 
+						where p_brand like  '%' || #{p_brand} || '%' 
+	</select>
+	<select id="getProductCount" resultType="Integer">
+	select count(distinct p_code) as num from product_info
+	</select>
+</mapper>

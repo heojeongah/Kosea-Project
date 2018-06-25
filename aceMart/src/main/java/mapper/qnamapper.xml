@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="qna">
+	<update id="updateQnaReply" parameterType="model.Qna">
+	update qna set w_state='답변완료' where group_id = #{group_id}
+	</update>
+	<select id="selectReplyPages" parameterType="Integer"
+		resultType="Integer">
+		select rn from
+		(
+			select a.*, rownum rn from
+			(
+				(select qna_id,group_id,order_no
+				from qna
+				order by w_state desc, group_id desc, order_no asc) a
+			)
+		) where qna_id=#{qna_id}
+	</select>
+	<select id="selectQnaByCond" parameterType="model.Condition" resultType="model.Qna">
+	select * from 
+	(
+		select a.*, rownum rn from
+		(
+			(select qna_id,w_state,c_id,w_date,title,content from qna
+			order by w_state desc, group_id desc, order_no asc) a
+		)
+	)where rn between #{startRow} and #{endRow}
+	</select>
+	<insert id="insertQna" parameterType="model.Qna">
+	insert into qna values(#{qna_id},
+	#{c_id},#{group_id},#{parent_id},#{order_no},#{w_date},
+	#{w_state},#{title},#{content})
+	</insert>
+	<select id="getMaxQnaId" resultType="Integer">
+		select max(qna_id) max_id from qna
+	</select>
+	<select id="getQnaInfoById" parameterType="Integer" resultType="model.Qna">
+	select * from qna where qna_id=#{qna_id}
+	</select>
+	<select id="selectQnaCount" resultType="Integer">
+	select count(qna_id) as num from qna
+	</select>
+</mapper>

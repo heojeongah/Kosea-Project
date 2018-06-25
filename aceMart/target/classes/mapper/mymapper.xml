@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="home">
+
+<select id="getCommentDetail" resultType="model.Comment"
+parameterType="String">
+	select distinct c.comment_id, c.ol_code, p.p_name,
+	c.title, c.c_image,c.content, c.w_grade,
+	c.w_date, c.c_id
+	from  product_info p, comment_info c, order_line o
+	where p.p_code=o.p_code and c.ol_code=o.ol_code
+	and c.comment_id = #{comment_id}
+</select>
+
+<select id="getCommentList" resultType="model.Comment"
+parameterType="model.SCondition">
+select * from
+   (
+      select a.*, rownum rn from
+         (   select distinct c.comment_id, c.c_image, p.p_name, c.title,
+         c.w_grade, c.w_date, c.c_id
+   from product_info p, comment_info c, order_line o
+   where p.p_code=o.p_code and c.ol_code=o.ol_code) a
+   )where rn between #{startRow} and #{endRow}
+   order by w_date desc
+</select>
+
+<select id="getCommentCount" resultType="Integer">
+	select count(*) as num from comment_info
+</select>
+
+</mapper>
